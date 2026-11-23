@@ -1,5 +1,6 @@
 
 import { useEffect, useMemo, useState } from "react";
+import "./ApplicationsPage.css"
 import { useApplications } from "../../hooks/useApplications";
 import type { Status, ListParams } from "../../api/mockApi";
 
@@ -162,68 +163,83 @@ const ApplicationsPage = () => {
   }
 
   return (
-    <main>
-      <h1>Loan Applications</h1>
-      <p>Total applications: {total}</p>
+    <main className="applications-page">
+      <header className="page-header">
+        <div>
+          <h1>Loan Applications</h1>
+          <p>Review and manage loan applications.</p>
+        </div>
 
-      <form onSubmit={handleSearch}>
-        <input
-          type="text"
-          placeholder="Search by applicant name or ID"
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-        />
+        <div className="total-count">
+          <span>Total Applications</span>
+          <strong>{total.toLocaleString("en-IN")}</strong>
+        </div>
+      </header>
 
-        <button type="submit">Search</button>
-      </form>
+      <div className="toolbar">
+        <form onSubmit={handleSearch} className="search-form">
+          <input
+            type="text"
+            placeholder="Search by applicant name or ID"
+            className="search-input"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+          />
 
-      <div>
-        <label htmlFor="status-filter">Filter by status: </label>
+          <button type="submit" className="toolbar-button">Search</button>
+        </form>
 
-        <select
-          id="status-filter"
-          value={status}
-          onChange={(event) =>
-            handleStatusChange(event.target.value as StatusFilter)
-          }
-        >
-          <option value="ALL">All</option>
-          <option value="PENDING">Pending</option>
-          <option value="APPROVED">Approved</option>
-          <option value="REJECTED">Rejected</option>
-        </select>
-      </div>
+        <div>
+          <label htmlFor="status-filter">Filter by status: </label>
 
-      <div>
-        <label htmlFor="sort-by">Sort by: </label>
+          <select
+            id="status-filter"
+            value={status}
+            onChange={(event) =>
+              handleStatusChange(event.target.value as StatusFilter)
+            }
+            className="toolbar-select"
+          >
+            <option value="ALL">All</option>
+            <option value="PENDING">Pending</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
+          </select>
+        </div>
 
-        <select
-          id="sort-by"
-          value={sortBy}
-          onChange={(event) =>
-            handleSortChange(event.target.value as SortBy, sortDir)
-          }
-        >
-          <option value="createdAt">Created Date</option>
-          <option value="loanAmount">Loan Amount</option>
-        </select>
+        <div>
+          <label htmlFor="sort-by">Sort by: </label>
 
-        <label htmlFor="sort-dir">Order: </label>
+          <select
+            id="sort-by"
+            value={sortBy}
+            onChange={(event) =>
+              handleSortChange(event.target.value as SortBy, sortDir)
+            }
+            className="toolbar-select"
+          >
+            <option value="createdAt">Created Date</option>
+            <option value="loanAmount">Loan Amount</option>
+          </select>
 
-        <select
-          id="sort-dir"
-          value={sortDir}
-          onChange={(event) =>
-            handleSortChange(sortBy, event.target.value as SortDir)
-          }
-        >
-          <option value="asc">
-            {sortBy === "loanAmount" ? "Low to High" : "Oldest to Newest"}
-          </option>
-          <option value="desc">
-            {sortBy === "loanAmount" ? "High to Low" : "Newest to Oldest"}
-          </option>
-        </select>
+          <label htmlFor="sort-dir">Order: </label>
+
+          <select
+            id="sort-dir"
+            value={sortDir}
+            onChange={(event) =>
+              handleSortChange(sortBy, event.target.value as SortDir)
+            }
+            className="toolbar-select"
+          >
+            <option value="asc">
+              {sortBy === "loanAmount" ? "Low to High" : "Oldest to Newest"}
+            </option>
+            <option value="desc">
+              {sortBy === "loanAmount" ? "High to Low" : "Newest to Oldest"}
+            </option>
+          </select>
+        </div>
       </div>
 
       {actionError && <p role="alert">{actionError}</p>}
@@ -231,90 +247,102 @@ const ApplicationsPage = () => {
       {applications.length === 0 ? (
         <p>No applications found.</p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Applicant</th>
-              <th>Email</th>
-              <th>Loan Amount</th>
-              <th>City</th>
-              <th>Status</th>
-              <th>Created Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
+        <div className="table-container">
+          <table className="applications-table">
+            <thead className="table-header">
+              <tr>
+                <th>ID</th>
+                <th>Applicant</th>
+                <th>Email</th>
+                <th>Loan Amount</th>
+                <th>City</th>
+                <th>Status</th>
+                <th>Created Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
 
-          <tbody>
-            {applications.map((application) => {
-              const isUpdating = updatingIds.has(application.id);
+            <tbody>
+              {applications.map((application) => {
+                const isUpdating = updatingIds.has(application.id);
 
-              return (
-                <tr key={application.id}>
-                  <td>{application.id}</td>
-                  <td>{application.applicantName}</td>
-                  <td>{application.email ?? "N/A"}</td>
-                  <td>
-                    {new Intl.NumberFormat("en-IN", {
-                      style: "currency",
-                      currency: "INR",
-                      maximumFractionDigits: 0,
-                    }).format(application.loanAmount / 100)}
-                  </td>
-                  <td>{application.city}</td>
-                  <td>{application.status}</td>
-                  <td>
-                    {new Date(application.createdAt).toLocaleDateString("en-IN")}
-                  </td>
-                  <td>
-                    {application.status === "PENDING" && (
-                      <>
-                        <button
-                          disabled={isUpdating}
-                          onClick={() =>
-                            updateApplicationStatus(application, "APPROVED")
-                          }
-                        >
-                          {isUpdating ? "Updating..." : "Approve"}
-                        </button>
+                return (
+                  <tr key={application.id} className="table-row">
+                    <td>{application.id}</td>
+                    <td>{application.applicantName}</td>
+                    <td>{application.email ?? "N/A"}</td>
+                    <td>
+                      {new Intl.NumberFormat("en-IN", {
+                        style: "currency",
+                        currency: "INR",
+                        maximumFractionDigits: 0,
+                      }).format(application.loanAmount / 100)}
+                    </td>
+                    <td>{application.city}</td>
+                    <td>
+                      <span className={`status-badge status-${application.status.toLowerCase()}`}>
+                        {application.status}
+                      </span>
+                    </td>
+                    <td>
+                      {new Date(application.createdAt).toLocaleDateString("en-IN")}
+                    </td>
+                    <td>
+                      {application.status === "PENDING" ? (
+                        <div className="action-button-wrapper">
+                          <button
+                            disabled={isUpdating}
+                            onClick={() =>
+                              updateApplicationStatus(application, "APPROVED")
+                            }
+                            className="action-button approve-button"
+                          >
+                            {isUpdating ? "Updating..." : "Approve"}
+                          </button>
 
-                        <button
-                          disabled={isUpdating}
-                          onClick={() =>
-                            updateApplicationStatus(application, "REJECTED")
-                          }
-                        >
-                          {isUpdating ? "Updating..." : "Reject"}
-                        </button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                          <button
+                            disabled={isUpdating}
+                            onClick={() =>
+                              updateApplicationStatus(application, "REJECTED")
+                            }
+                            className="action-button reject-button"
+                          >
+                            {isUpdating ? "Updating..." : "Reject"}
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="no-action">—</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
 
-      <div>
-        <button
-          disabled={page === 1}
-          onClick={() => changePage(page - 1)}
-        >
-          Previous
-        </button>
+<div className="pagination">
+  <button
+    className="pagination-button"
+    disabled={page === 1}
+    onClick={() => changePage(page - 1)}
+  >
+    Previous
+  </button>
 
-        <span>
-          {" "}Page {page} of {totalPages}{" "}
-        </span>
+  <span className="pagination-info">
+    Page <strong>{page}</strong> of <strong>{totalPages}</strong>
+  </span>
 
-        <button
-          disabled={page >= totalPages}
-          onClick={() => changePage(page + 1)}
-        >
-          Next
-        </button>
-      </div>
+  <button
+    className="pagination-button"
+    disabled={page >= totalPages}
+    onClick={() => changePage(page + 1)}
+  >
+    Next
+  </button>
+</div>
     </main>
   );
 };
