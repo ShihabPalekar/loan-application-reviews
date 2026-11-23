@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useState } from "react";
-import { useApplications } from "../hooks/useApplications";
-import type { Status, ListParams } from "../api/mockApi";
+import { useApplications } from "../../hooks/useApplications";
+import type { Status, ListParams } from "../../api/mockApi";
 
 type StatusFilter = Status | "ALL";
 type SortBy = "createdAt" | "loanAmount";
